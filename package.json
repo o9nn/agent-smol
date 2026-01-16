@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "type": "module",
   "bin": {
-    "mini-agent": "./dist/agent.js"
+    "mini-agent": "./dist/agent.js",
+    "deltecho-bot": "./dist/deltecho-bot.js"
   },
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node dist/agent.js"
+    "start": "npm run build && node dist/agent.js",
+    "start:deltecho": "npm run build && node dist/deltecho-bot.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.1"
+    "@anthropic-ai/sdk": "^0.30.1",
+    "@deltachat/jsonrpc-client": "^1.160.0",
+    "@deltachat/stdio-rpc-server": "^1.160.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

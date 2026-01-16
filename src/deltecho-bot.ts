@@ -18,7 +18,10 @@ const anthropic = new Anthropic({
 // Store conversation history per chat
 const conversations = new Map<number, Anthropic.MessageParam[]>();
 
-async function callClaude(chatId: number, userMessage: string): Promise<string> {
+// Maximum recursion depth for tool use to prevent infinite loops
+const MAX_TOOL_RECURSION = 5;
+
+async function callClaude(chatId: number, userMessage: string, recursionDepth: number = 0): Promise<string> {
   let conversation = conversations.get(chatId);
   if (!conversation) {
     conversation = [];
@@ -45,9 +48,14 @@ async function callClaude(chatId: number, userMessage: string): Promise<string> 
   
   conversation.push({ role: 'assistant', content: response.content });
   
-  // Handle tool use
+  // Handle tool use with recursion limit
   for (const content of response.content) {
     if (content.type === 'tool_use' && content.name === 'bash') {
+      if (recursionDepth >= MAX_TOOL_RECURSION) {
+        console.warn(`[Chat ${chatId}] ⚠️  Max tool recursion depth reached`);
+        return "I've executed multiple commands in sequence. Please let me know if you need anything else.";
+      }
+      
       const { command } = content.input as { command: string };
       console.log(`[Chat ${chatId}] 🔧 Running: ${command}`);
       let output: string;
@@ -70,7 +78,7 @@ async function callClaude(chatId: number, userMessage: string): Promise<string> 
           content: output 
         }] 
       });
-      return callClaude(chatId, '');
+      return callClaude(chatId, '', recursionDepth + 1);
     }
   }
   
